@@ -1,7 +1,7 @@
 require("./config/config");
 require("./db");
 const express = require("express");
-const port = process.PORT || 3000;
+const port = process.env.PORT || 3000;
 const bodyParser = require("body-parser");
 
 // Routes
@@ -25,3 +25,5 @@ app.use("/api/posts", posts);
 app.use("/api/profile", profile);
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
+
+module.exports = { app };
