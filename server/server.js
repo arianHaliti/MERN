@@ -2,6 +2,7 @@ require("./config/config");
 require("./db");
 const express = require("express");
 const port = process.PORT || 3000;
+const bodyParser = require("body-parser");
 
 // Routes
 const users = require("./../routes/api/users");
@@ -9,6 +10,10 @@ const profile = require("./../routes/api/profile");
 const posts = require("./../routes/api/posts");
 
 const app = express();
+
+// Body parser middleware
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
   res.send("hello");

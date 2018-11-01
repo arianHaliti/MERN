@@ -7,7 +7,7 @@ mongoose
   )
   .then(
     () => {
-      console.log("Db connected");
+      console.log(`Connected to the database -> ${process.env.MONGODB_URI}`);
     },
     err => console.log(err)
   );
