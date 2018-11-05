@@ -1,7 +1,10 @@
+require("../../server/config/config");
 const express = require("express");
 const router = express.Router();
 const gravatar = require("gravatar");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const passport = require("passport");
 
 // Load User Model
 const User = require("./../../models/User");
@@ -48,5 +51,48 @@ router.post("/register", (req, res) => {
     });
   });
 });
+
+// @route    GET api/users/login
+// @desc     Login User(JWT)
+// @access   Public
+router.post("/login", (req, res) => {
+  email = req.body.email;
+  password = req.body.password;
+  User.findOne({ email }).then(user => {
+    if (!user) return res.status(404).json({ error: "Wrong Credentials" });
+    bcrypt.compare(password, user.password).then(bool => {
+      if (!bool) return res.status(404).json({ error: "Wrong Credentials" });
+
+      let payload = {
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar
+      };
+
+      jwt.sign(
+        payload,
+        process.env.SECRET_KEY,
+        { expiresIn: 3600 },
+        (err, token) => {
+          res.json({
+            msg: "success",
+            token: "Bearer " + token
+          });
+        }
+      );
+    });
+  });
+});
+// @route    GET api/users/current
+// @desc     Return current user
+// @access   Private
+router.get(
+  "/current",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    res.json(req.user);
+  }
+);
 
 module.exports = router;
