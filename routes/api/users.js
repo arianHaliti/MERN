@@ -9,6 +9,9 @@ const passport = require("passport");
 // Load User Model
 const User = require("./../../models/User");
 
+// Validators
+const validateRegisterInput = require("../../validation/register");
+const validateLoginInput = require("../../validation/login");
 // @route    GET api/users/test
 // @desc     Tests users route
 // @access   Public
@@ -22,6 +25,10 @@ router.get("/test", (req, res) => {
 // @desc     Register user
 // @access   Public
 router.post("/register", (req, res) => {
+  const { errors, isValid } = validateRegisterInput(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
   User.findOne({ email: req.body.email }).then(user => {
     if (user) return res.status(400).json({ email: "email already exist" });
 
@@ -56,6 +63,10 @@ router.post("/register", (req, res) => {
 // @desc     Login User(JWT)
 // @access   Public
 router.post("/login", (req, res) => {
+  const { errors, isValid } = validateLoginInput(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
   email = req.body.email;
   password = req.body.password;
   User.findOne({ email }).then(user => {

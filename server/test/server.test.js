@@ -45,3 +45,15 @@ describe("POST /Users Register", () => {
     done();
   });
 });
+describe("POST /User Login", () => {
+  it("Should log in the user and give token", done => {
+    request(app)
+      .post("api/users/login")
+      .send({
+        email: "arian@g.com",
+        password: "123123"
+      })
+      .expect(200);
+    done();
+  });
+});
