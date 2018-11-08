@@ -15,7 +15,8 @@ describe("POST /Users Register", () => {
       .send({
         name: "Arian",
         email: "thisisAn@example.com",
-        password: "123123"
+        password: "123123",
+        password2: "123123"
       })
       .expect(200)
       .expect(res => {
@@ -39,7 +40,8 @@ describe("POST /Users Register", () => {
       .send({
         name: "Arian",
         email: "thisisAn@example.com",
-        password: "123123"
+        password: "123123",
+        password2: "123123"
       })
       .expect(400);
     done();
@@ -53,7 +55,21 @@ describe("POST /User Login", () => {
         email: "arian@g.com",
         password: "123123"
       })
-      .expect(200);
+      .expect(200)
+      .expect(res => {
+        expect(res.token).toBeTruthy();
+      });
+    done();
+  });
+  it("Should not log in user with wrong password", done => {
+    request(app)
+      .post("api/users/login")
+      .send({ email: "arian@g.com", password: "1233321" })
+      .expect(400)
+      .expect(res => {
+        expect(res.error).toBeTruthy();
+        expect(res.token).toBeFalsy();
+      });
     done();
   });
 });
