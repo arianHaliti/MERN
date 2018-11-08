@@ -107,7 +107,7 @@ let profileSchema = new Schema({
       type: String
     },
     instagram: {
-      type: Strings
+      type: String
     }
   },
   date: {
