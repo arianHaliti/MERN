@@ -1,6 +1,6 @@
 const { ObjectID } = require("mongodb");
 const User = require("../../../models/User");
-
+const jwt = require("jsonwebtoken");
 const userOneID = new ObjectID();
 const userTwoID = new ObjectID();
 
@@ -9,7 +9,18 @@ const users = [
     _id: userOneID,
     name: "User Name One",
     password: "123123",
-    email: "arian@g.com"
+    email: "arian@g.com",
+    token: jwt
+      .sign(
+        {
+          _id: userOneID,
+          name: "User Name One",
+          email: "arian@g.com"
+        },
+        process.env.SECRET_KEY,
+        { expiresIn: 3600 }
+      )
+      .toString()
   },
   {
     _id: userTwoID,
