@@ -7,6 +7,9 @@ const passport = require("passport");
 // Load Profile model
 const Profile = require("../../models/Profile");
 
+// Load User model
+const User = require("../../models/User");
+
 //Load Profile Validation
 const validateProfileInput = require("../../validation/profile");
 const validateExperienceInput = require("../../validation/experience");
@@ -241,6 +244,77 @@ router.post(
       profile.education.unshift(education);
       profile.save().then(profile => {
         res.json(profile);
+      });
+    });
+  }
+);
+
+// @route    DELETE api/profile/education/:edu_id
+// @desc     delete for education
+// @access   Private
+router.delete(
+  "/education/:edu_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    let errors = {};
+    Profile.findOne({ user: req.user.id })
+      .then(profile => {
+        if (!profile) {
+          errors.profile = "No Profile found";
+          return res.status(400).json(errors);
+        }
+        // Get the id of the education
+        let removeIndex = profile.education
+          .map(item => item.id) // ?
+          .indexOf(req.params.edu_id);
+
+        // Splice out of array
+        profile.education.splice(removeIndex, 1);
+
+        // Save
+        profile.save().then(profile => res.json(profile));
+      })
+      .catch(e => res.status(404).json(e));
+  }
+);
+
+// @route    DELETE api/profile/experience/:exp_id
+// @desc     delete for experience
+// @access   Private
+router.delete(
+  "/experience/:exp_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    let errors = {};
+    Profile.findOne({ user: req.user.id })
+      .then(profile => {
+        if (!profile) {
+          errors.profile = "No profile found";
+          return res.status(400).json(errors);
+        }
+        // console.log(req.params.exp_id);
+        let removeIndex = profile.experience
+          .map(item => item.id)
+          .indexOf(req.params.exp_id);
+
+        profile.experience.splice(removeIndex, 1);
+
+        profile.save().then(profile => res.json(profile));
+      })
+      .catch(e => res.status(404).json(e));
+  }
+);
+
+// @route    DELETE api/profile/
+// @desc     delete user and profile
+// @access   Private
+router.delete(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOneAndRemove({ user: req.user.id }).then(() => {
+      User.findOneAndRemove({ _id: req.user.id }).then(() => {
+        res.json({ success: "true" });
       });
     });
   }
