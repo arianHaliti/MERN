@@ -132,7 +132,7 @@ describe("POST /Profile Create profile", () => {
         company: "Johnsons",
         youtube: "https://youtube.com/chanell/johnmoe"
       })
-      .expect(400);
+      .expect(401);
     done();
   });
   it("Should update a profile for a user", done => {
@@ -184,3 +184,4 @@ describe("POST /Profile Create profile", () => {
     done();
   });
 });
+describe("POST /experience creaate Experience", () => {});

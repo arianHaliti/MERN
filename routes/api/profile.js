@@ -1,4 +1,5 @@
 const express = require("express");
+
 const router = express.Router();
 const mongoose = require("mongoose");
 const passport = require("passport");
@@ -8,7 +9,8 @@ const Profile = require("../../models/Profile");
 
 //Load Profile Validation
 const validateProfileInput = require("../../validation/profile");
-
+const validateExperienceInput = require("../../validation/experience");
+const validateEducationInput = require("../../validation/education");
 // @route    GET api/profile/test
 // @desc     Tests profile route
 // @access   Public
@@ -54,7 +56,24 @@ router.post(
     if (!isValid) {
       return res.status(400).json(errors);
     }
-    let profileObject = {};
+    let profileObject = {
+      // user: req.user.id,
+      // handle: req.body.handle,
+      // company: req.body.company,
+      // website: req.body.website,
+      // location: req.body.location,
+      // status: req.body.status,
+      // bio: req.body.bio,
+      // githubusername: req.body.githubusername,
+      // skills: req.body.skills.split(","),
+      // social: {
+      //   youtube: req.body.youtube,
+      //   twitter: req.body.twitter,
+      //   facebook: req.body.facebook,
+      //   linkedin: req.body.linkedin,
+      //   instagram: req.body.instagram
+      // }
+    };
     profileObject.user = req.user.id;
     if (req.body.handle) profileObject.handle = req.body.handle;
     if (req.body.company) profileObject.company = req.body.company;
@@ -76,6 +95,8 @@ router.post(
     Profile.findOne({ user: req.user.id }).then(profile => {
       if (profile) {
         //EDIT
+
+        console.log("EDIT");
         Profile.findOneAndUpdate(
           { user: req.user.id },
           { $set: profileObject },
@@ -83,13 +104,12 @@ router.post(
         ).then(profile => res.send(profile));
       } else {
         //Create
-
+        console.log("CREATE");
         //Check if handler in use
         Profile.findOne({ handle: profileObject.handle }).then(profile => {
-          console.log(profile);
           if (profile) {
-            error.handle = "The handle is already in use";
-            return res.status(400).json(error);
+            errors.handle = "The handle is already in use";
+            return res.status(400).json(errors);
           }
           // Save Profile
           new Profile(profileObject).save().then(profile => res.json(profile));
@@ -158,4 +178,72 @@ router.get("/all", (req, res) => {
       res.status(404).json(errors);
     });
 });
+
+// @route    POST api/profile/experience
+// @desc     Post for experience
+// @access   Private
+router.post(
+  "/experience",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    let { errors, isValid } = validateExperienceInput(req.body);
+    if (!isValid) {
+      console.log(errors);
+      return res.status(400).json(errors);
+    }
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      if (!profile) {
+        errors.profile = "No profile found";
+        return res.status(400).json(errors);
+      }
+      let experience = {
+        title: req.body.title,
+        company: req.body.title,
+        location: req.body.location,
+        from: req.body.from,
+        to: req.body.to,
+        current: req.body.current,
+        description: req.body.description
+      };
+      profile.experience.unshift(experience);
+      profile.save().then(profile => {
+        res.json(profile);
+      });
+    });
+  }
+);
+
+// @route    POST api/profile/education
+// @desc     Post for education
+// @access   Private
+router.post(
+  "/education",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    let { errors, isValid } = validateEducationInput(req.body);
+    if (!isValid) {
+      return res.status(400).json(errors);
+    }
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      if (!profile) {
+        errors.profile = "No profile found";
+        return res.status(400).json(errors);
+      }
+      let education = {
+        school: req.body.school,
+        degree: req.body.degree,
+        fieldofstudy: req.body.fieldofstudy,
+        from: req.body.from,
+        to: req.body.to,
+        current: req.body.current,
+        description: req.body.description
+      };
+      profile.education.unshift(education);
+      profile.save().then(profile => {
+        res.json(profile);
+      });
+    });
+  }
+);
+
 module.exports = router;
