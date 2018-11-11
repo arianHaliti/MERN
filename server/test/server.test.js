@@ -183,5 +183,134 @@ describe("POST /Profile Create profile", () => {
       });
     done();
   });
+
+  describe("POST profile/experience create Experience", () => {
+    it("should  create experience for user", done => {
+      request(app)
+        .post("api/profile/experience")
+        .send({
+          title: "Backend Dev",
+          company: "3cis",
+          from: "12-12-2011",
+          description: "Worked as a backend dev"
+        })
+        .set("Authorization", users[0].token)
+        .expect(200)
+        .expect(res => {
+          expect(res.experience[0].length).toBe(6);
+          expect(res.experience[0].title).toBe("Backend Dev");
+          expect(res.experience[0].company).toBeTruthy();
+          expect(res.experience[0].from).toBeTruthy();
+          expect(res.experience[0].titles).toBeTruthy();
+        });
+      done();
+    });
+    it("should not create experience for user without filling the fields", done => {
+      request(app)
+        .post("api/profile/experience")
+        .set("Authorization", users[0].toke)
+        .expect(400)
+        .expect(res => {
+          expect(res.title).toBe("Job title is required");
+          expect(res.company).toBe("Company name is required");
+          expect(res.title).toBe("Date when started is required");
+        });
+      done();
+    });
+    it("should not create experience for user without token", done => {
+      request(app)
+        .post("api/profile/experience")
+        .expect(401);
+      done();
+    });
+  });
+  describe("POST /education create Education", () => {
+    it("should  create education for user", done => {
+      request(app)
+        .post("api/profile/education")
+        .send({
+          school: "UBT",
+          degree: "Software Engenieer",
+          from: "09-03-2011",
+          fieldofstudy: "Computer Scienece"
+        })
+        .set("Authorization", users[0].token)
+        .expect(200)
+        .expect(res => {
+          expect(res.experience[0].length).toBe(6);
+          expect(res.experience[0].school).toBe("UBT");
+          expect(res.experience[0].degree).toBeTruthy();
+          expect(res.experience[0].from).toBeTruthy();
+          expect(res.experience[0].fieldofstudy).toBeTruthy();
+        });
+      done();
+    });
+    it("should not create education for user without filling the fields", done => {
+      request(app)
+        .post("api/profile/education")
+        .set("Authorization", users[0].toke)
+        .expect(400)
+        .expect(res => {
+          expect(res.school).toBe("School field is required");
+          expect(res.degree).toBe("Degree field is required");
+          expect(res.fieldofstudy).toBe("Field of Study is required");
+          expect(res.from).toBe("date started is required");
+        });
+      done();
+    });
+    it("should not create education for user without token", done => {
+      request(app)
+        .post("api/profile/education")
+        .expect(401);
+      done();
+    });
+  });
+  describe("DELETE /experience/:exp_id deletes experience", () => {
+    it("should delete experience", done => {
+      let exp_id = "";
+      Profile.findOne({ user: users[0]._id })
+        .then(profile => {
+          exp_id = profile.experience[0]._id;
+          request(app)
+            .delete(`api/profile/experience/${exp_id}`)
+            .set("Authorization", users[0].token)
+            .expect(200);
+          done();
+        })
+        .catch(e => {
+          expect(400);
+          done();
+        });
+    });
+    it("should not delete experience without token", done => {
+      request(app)
+        .delete(`api/profile/experience/124211411}`)
+        .expect(400);
+      done();
+    });
+  });
+  describe("DELETE /education/:edu_id deletes education", () => {
+    it("should delete education", done => {
+      let edu_id = "";
+      Profile.findOne({ user: users[0]._id })
+        .then(profile => {
+          edu_id = profile.education[0]._id;
+          request(app)
+            .delete(`api/profile/education/${edu_id}`)
+            .set("Authorization", users[0].token)
+            .expect(200);
+          done();
+        })
+        .catch(e => {
+          expect(400);
+          done();
+        });
+    });
+    it("should not delete education without token", done => {
+      request(app)
+        .delete(`api/profile/education/124211411}`)
+        .expect(400);
+      done();
+    });
+  });
 });
-describe("POST /experience creaate Experience", () => {});
