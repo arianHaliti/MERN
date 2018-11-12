@@ -4,7 +4,7 @@ let validatePostInput = data => {
   let errors = {};
   data.text = isEmpty(data.text) ? "" : data.text;
 
-  if (Validator.isLength(data.text, { min: 10, max: 300 })) {
+  if (!Validator.isLength(data.text, { min: 10, max: 300 })) {
     errors.text = "Text field should be between 20 - 300 characters";
   }
   if (Validator.isEmpty(data.text)) {
