@@ -10,17 +10,19 @@ const users = [
     name: "User Name One",
     password: "123123",
     email: "arian@g.com",
-    token: jwt
-      .sign(
-        {
-          _id: userOneID,
-          name: "User Name One",
-          email: "arian@g.com"
-        },
-        process.env.SECRET_KEY,
-        { expiresIn: 3600 }
-      )
-      .toString()
+    token:
+      "Bearer " +
+      jwt
+        .sign(
+          {
+            _id: userOneID,
+            name: "User Name One",
+            email: "arian@g.com"
+          },
+          process.env.SECRET_KEY,
+          { expiresIn: 3600 }
+        )
+        .toString()
   },
   {
     _id: userTwoID,

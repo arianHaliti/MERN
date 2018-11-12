@@ -4,7 +4,9 @@ const request = require("supertest");
 const { populateUsers, users } = require("./seed/seed");
 
 let { app } = require("../server");
-let User = require("../../models/User");
+let User = require("./../../models/User");
+let Profile = require("./../../models/Profile");
+let Post = require("./../../models/Post");
 
 beforeEach(populateUsers);
 // beforeEach(populateProfiles);
@@ -39,44 +41,46 @@ describe("POST /Users Register", () => {
       .post("/api/users/register")
       .send({
         name: "Arian",
-        email: "thisisAn@example.com",
+        email: "arian@g.com",
         password: "123123",
         password2: "123123"
       })
-      .expect(400);
-    done();
+      .expect(400)
+      .end(done);
   });
 });
 describe("POST /User Login", () => {
   it("Should log in the user and give token", done => {
     request(app)
-      .post("api/users/login")
+      .post("/api/users/login")
       .send({
-        email: "arian@g.com",
-        password: "123123"
+        password: "123123",
+        email: "arian@g.com"
       })
       .expect(200)
       .expect(res => {
         expect(res.token).toBeTruthy();
-      });
-    done();
+      })
+      .end(done);
   });
   it("Should not log in user with wrong password", done => {
     request(app)
-      .post("api/users/login")
+      .post("/api/users/login")
       .send({ email: "arian@g.com", password: "1233321" })
-      .expect(400)
+      .expect(404)
       .expect(res => {
         expect(res.error).toBeTruthy();
         expect(res.token).toBeFalsy();
-      });
-    done();
+      })
+      .end(done);
   });
 });
 describe("POST /Profile Create profile", () => {
   it("Should create a profile for a user", done => {
+    console.log(users[0].token);
     request(app)
-      .post("api/profile")
+      .post("/api/profile")
+      .set("Authorization", users[0].token)
       .send({
         handle: "johnMoe",
         status: "Programmer",
@@ -88,17 +92,16 @@ describe("POST /Profile Create profile", () => {
         company: "Johnsons",
         youtube: "https://youtube.com/chanell/johnmoe"
       })
-      .set("Authorization", users[0].token)
       .expect(200)
       .expect(res => {
-        expect(res.skills).to.have.length(4);
+        expect(res.skills.length).toBe(4);
         expect(res.social.twitter).toBe("https://twitter.com/johnMoe");
         expect(res.social.linkedin).toBeTruthy();
         expect(res.social.youtube).toBeTruthy();
         expect(res.handle).toBeTruthy();
         expect(res.status).toBeTruthy();
-      });
-    done();
+      })
+      .end(done);
   });
   it("Should not create a profile with the same handle", done => {
     request(app)
@@ -312,5 +315,57 @@ describe("POST /Profile Create profile", () => {
         .expect(400);
       done();
     });
+  });
+});
+describe("POST router", () => {
+  let post_id;
+  it("Should create a post", done => {
+    request(app)
+      .post("api/posts")
+      .send({ text: "TestPost" })
+      .set("Authorization", users[0].token)
+      .expect(200)
+      .expect(res => {
+        expect(res.text).toBe("TestPost");
+        post_id = res._id;
+      });
+    done();
+  });
+  it("Should not create a post", done => {
+    request(app)
+      .post("api/posts")
+      .send({ text: "TestPost" })
+      .expect(401);
+    done();
+  });
+  it("Should get all the posts", done => {
+    request(app)
+      .get("api/posts/")
+      .expect(200)
+      .expect(res => {
+        exepect(res).to.have.length(1);
+      });
+    done();
+  });
+  it("Should get one post", done => {
+    request(app)
+      .get("api/posts/" + post_id)
+      .expect(400)
+      .expect(res => {
+        exepect(res).to.have.length(1);
+        expect(res.text).toBe("TestPost");
+        expect(res[0].user).toBe(users[0]._id);
+      });
+
+    done();
+  });
+  it("Should not get one post", done => {
+    request(app)
+      .get("api/posts/dsadasddsasaad")
+      .expect(400)
+      .expect(res => {
+        exepect(res.message).toBe("Post not found");
+      });
+    done();
   });
 });
