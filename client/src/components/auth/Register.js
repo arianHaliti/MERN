@@ -1,6 +1,11 @@
 import React, { Component } from "react";
-import axios from "axios";
 import classnames from "classnames";
+
+// REDUX
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { registerUser } from "../../actions/authActions";
+import { withRouter } from "react-router-dom";
 class Register extends Component {
   constructor() {
     super();
@@ -14,6 +19,15 @@ class Register extends Component {
     this.onChange = this.onChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
   }
+
+  //This runs when your component recives props
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.errors) {
+      this.setState({
+        errors: nextProps.errors
+      });
+    }
+  }
   onChange(e) {
     this.setState({ [e.target.name]: e.target.value });
   }
@@ -25,17 +39,9 @@ class Register extends Component {
       password: this.state.password,
       password2: this.state.password2
     };
-    axios
-      .post("/api/users/register", newUser)
-      .then(res => {
-        console.log(res.data);
-      })
-      .catch(e => {
-        console.log(e.response.data);
-        this.setState({
-          errors: e.response.data
-        });
-      });
+
+    //REDUX
+    this.props.registerUser(newUser, this.props.history);
   }
   render() {
     let { errors } = this.state;
@@ -48,7 +54,7 @@ class Register extends Component {
               <p className="lead text-center">
                 Create your DevConnector account
               </p>
-              <form onSubmit={this.onSubmit} autoComplete="off">
+              <form noValidate onSubmit={this.onSubmit} autoComplete="off">
                 <div className="form-group">
                   <input
                     type="text"
@@ -128,5 +134,20 @@ class Register extends Component {
     );
   }
 }
+Register.propTypes = {
+  registerUser: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+  errors: PropTypes.object.isRequired
+};
 
-export default Register;
+// SET THE props.auth to the state auth
+const mapStateToProps = state => ({
+  auth: state.auth,
+  errors: state.errors
+});
+
+//REDUX IDHAI
+export default connect(
+  mapStateToProps,
+  { registerUser }
+)(withRouter(Register));
