@@ -1,10 +1,5 @@
 import axios from "axios";
-import {
-  CLEAR_CURRENT_PROFILE,
-  GET_PROFILE,
-  PROFILE_LOADING,
-  GET_ERRORS
-} from "./types";
+import { CLEAR_CURRENT_PROFILE, GET_PROFILE, PROFILE_LOADING } from "./types";
 
 // Get current profile
 
